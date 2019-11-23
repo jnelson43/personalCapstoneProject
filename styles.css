@@ -1,8 +1,12 @@
+/*Global*/
+html {
+  font-family: 'Raleway', sans-serif;
+}
 body {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  border: 1px solid black;
+  background:  #FAFAFA;
 }
 a {
   text-decoration: none;
@@ -12,8 +16,15 @@ header {
   display: flex;
   order: 0;
   justify-content: space-between;
-  background: #2e8B57;
+  background:  #FFF;
   align-items: center;
+  border-bottom: 2px solid #DCDCDC;
+}
+header .login {
+  margin-left: 20px;
+}
+header .addNew {
+  margin-right: 20px;
 }
 main > *, header, footer {
   margin: 4px;
@@ -28,7 +39,7 @@ main {
 }
 article {
   order: 1;
-  background:  #D3D3D3;
+  
   flex: 4 0 60%;
 }
 nav {
@@ -39,7 +50,8 @@ nav {
 aside {
   order: 2;
   flex: 1 1 20%;
-  background: #21618C;
+  border-left: 2px solid #DCDCDC;
+  margin-top: 50px;
 }
 footer {
   order: 3;
@@ -48,6 +60,7 @@ footer {
 header,footer {
   flex-basis: 100px;
 }
+
 @media all and (max-width: 640px) {
   main {
     flex-direction: column;
@@ -59,4 +72,95 @@ header,footer {
   header, footer {
     flex-basis: 50px;
   }
+}
+
+/*Logo*/
+.logo {
+  font-family: 'Berkshire Swash', cursive;
+  font-size: 3vw;
+  background-color: #A8E0A8;
+  border-radius: 30px;
+  padding: 10px;
+  border: 3px solid black;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+/*Login*/
+.loginWrapper{
+  display:flex;
+  flex-flow: row wrap;
+  max-width: 50%;
+  justify-content: center;
+  border: 1px solid #DCDCDC;
+  margin: auto;
+  background-color: #FFF;
+  border-radius: 5px;
+  margin-top: 50px;
+}
+.loginWrapper h1{
+  text-align:center;
+  flex-basis: 100%;
+}
+#loginUsername {
+  margin-bottom: 10px;
+}
+/*Tags Sidebar*/
+.tagContainer {
+  display: flex;
+  flex-flow: row wrap;
+}
+.tag {
+  display:flex;
+  flex-flow: row nowrap;
+  background-color: #A8E0A8;
+  border-radius: 5px;
+  border: 1px solid #9DA897;
+  padding: 3px;
+  margin: 7px;
+  cursor: pointer;
+}
+.tagExit {
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 12px;
+  margin-left: 5px;
+  margin-top: -2px;
+  text-decoration: none;
+}
+
+.tagExit:hover {
+  font-size: 14px;
+  font-weight:bold;
+}
+
+/*Restaurant*/
+.restaurantContainer {
+  display:flex;
+  flex-flow: row wrap;
+  max-width: 75%;
+  text-align:center;
+  justify-content: center;
+  border: 1px solid #DCDCDC;
+  margin: auto;
+  background-color: #FFF;
+  border-radius: 5px;
+  margin-top: 50px;
+}
+.restaurantTitle {
+  font-size: 2vw;
+  flex-basis: 100%;
+  margin-bottom: 10px;
+}
+.reataurantImage {
+  max-width: 100%;
+  flex-basis: 10%;
+  
+}
+
+.restaurantDescription {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  flex-basis: 100%;
+  
 }
