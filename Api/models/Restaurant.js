@@ -13,7 +13,7 @@ const RestaurantSchema = mongoose.Schema({
 		type: String,
 		require: true
 	},
-	UserName: {
+	username: {
 		type: String,
 		require: true
 	}

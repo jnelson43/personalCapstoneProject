@@ -28,13 +28,13 @@ router.post('/', async (req,res) => {
 		name: req.body.name,
 		description: req.body.description,
 		imageURL: req.body.imageURL,
-		UserName: req.body.userName
+		username: req.body.username
 	});
 	try {
 		const savedRestauruant = await restaurant.save();
 		res.json(savedRestaurant);
 	}catch{
-		res.json({message: err});
+		res.json({message: 'Error'});
 	}
 
 });
