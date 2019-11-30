@@ -20,19 +20,18 @@
   <article>
    <div class="loginWrapper">
     <h1>Add Restaurant</h1>
-    <form action="index.html" id="registrationForm">
+    <div id="registrationForm">
       <label>Name:</label><br>
-      <input type="text" name="Username" id="registrationUsername">
+      <input type="text" id="restaurantName">
       <br><br>
       <label>Description:</label><br>
-      <input type="text" name="firstName" id="registrationFirstName">
+      <input type="text" id="restaurantDescription">
       <br><br>
-      <label>Image:</label><br>
-      <p id="msg"></p>
-      <input type="file" id="file" name="file"/>
+      <label>Image URL:</label><br>
+      <input type="text" id="imageURL" name="file">
       <br><br>
-      <input type="submit" value="Register">
-    </form>
+      <button class="addRestaurantSubmit">Submit</button>
+    </div>
   </div>
 </article>
 </main>

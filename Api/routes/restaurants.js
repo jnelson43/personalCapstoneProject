@@ -27,8 +27,8 @@ router.post('/', async (req,res) => {
 	const restaurant = new Restaurant({
 		name: req.body.name,
 		description: req.body.description,
-		restaurauntID: req.body.restaurauntID,
-		UserID: req.body.userID
+		imageURL: req.body.imageURL,
+		UserName: req.body.userName
 	});
 	try {
 		const savedRestauruant = await restaurant.save();

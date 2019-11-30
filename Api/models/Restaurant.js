@@ -9,11 +9,11 @@ const RestaurantSchema = mongoose.Schema({
 		type: String,
 		require: true
 	},
-	restaurantID: {
+	imageURL: {
 		type: String,
 		require: true
 	},
-	UserID: {
+	UserName: {
 		type: String,
 		require: true
 	}

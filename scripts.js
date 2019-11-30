@@ -1,4 +1,23 @@
 $(document).ready(function(){
+	/*Check if logged in and set login button to appropriate text and action*/
+	var loggedUser = localStorage.getItem("username");
+	if(loggedUser != 'null'){
+		$('.login').html("Logout");
+		$('.login').attr("href","index.html");
+	}else {
+		$('.login').html("Login");
+		$('.login').attr("href","login.html");
+		$('.addNew').html("");
+	}
+
+	$('.login').click(function(){
+		if(loggedUser != 'null'){
+			loggedUser = 'null';
+			localStorage.setItem("username", 'null');
+		}
+	});
+
+	/*Fill tag container with all tags*/
 	$('.tagContainer').append('<div class="tag"><div class="tagText">Mexican</div><div class="tagExit">✖</div></div>');
 
 	$('.registrationSubmit').click(function() {
@@ -14,9 +33,20 @@ $(document).ready(function(){
 	$('.loginSubmit').click(function() {
 		var username = isPresent($('#loginUsername').val(),"Username");
 		var password = isPresent($('#loginPassword').val(),"Password");
-		var successfulLogin = true;
-		handleLogin(username,password);
+		if(username != "Error" && password !="Error"){
+			handleLogin(username,password);
+		}
 	});
+
+	$('.addRestaurantSubmit').click(function() {
+		var name = isPresent($('#restaurantName').val(),"Name");
+		var description = isPresent($('#restaurantDescription').val(),"description");
+		var imageURL = verifyImageURL($('#imageURL').val(),"imageURL");
+		if(name != "Error" && description !="Error" && imageURL !="Error"){
+			restaurantAdd(name,description,imageURL,loggedUser);
+		}
+	});
+
 });
 
 /*DB Methods*/
@@ -56,7 +86,23 @@ function addPerson(username,password,firstName,lastName){
     });
 }
 
+function restaurantAdd(name,description,imageURL,username){
+	var postData = JSON.stringify({'name': name,'description': description,'imageURL': imageURL, 'username': username});
+    $.ajax({
+	    'url':'http://localhost:3000/restaurants',
+	    'method':'POST',
+	    'dataType': 'json',
+	    processData: false,
+	    'contentType': 'application/json',
+	    'data': postData,
+	    'success': function(data) {
+
+     	}
+    });
+}
+
 /*Handlers*/
+
 async function handleLogin(username,password){
 	let promise = new Promise((resolve, reject) => {
 		var url = 'http://localhost:3000/users';
@@ -69,9 +115,9 @@ async function handleLogin(username,password){
 	let users = await promise;
 
 	if(passwordMatchesUsername(username,password,users) == true){
-		setCookie("username",username,365);
-		var loggedUser = getCookie("username");
-		alert(loggedUser);
+		localStorage.setItem("username", username);
+		loggedUser = localStorage.getItem("username");
+		window.location.replace("index.html");
 	}else{
 		alert("Username/Password combination not found");
 	}
@@ -82,13 +128,11 @@ function passwordMatchesUsername(username,password,users){
 	users.forEach(user => {
    		if(user.username == username){
    			if(user.password == password){
-   				alert("should pass");
    				passwordMatches = true;
    			}
    		}
    	});
     if(passwordMatches == true){
-    	alert("pass");
 		return true;
     }else {
     	alert("fail");
@@ -107,25 +151,11 @@ function isPresent(value,nameOfField = "") {
 	}
 }
 
-/*Cookies*/
-function setCookie(cname, cvalue, exdays) {
-  var d = new Date();
-  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-  var expires = "expires="+d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;";
-}
-
-function getCookie(cname) {
-  var name = cname + "=";
-  var ca = document.cookie.split(';');
-  for(var i = 0; i < ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
+function verifyImageURL(url) {
+    if (url.match(/\.(jpeg|jpg|gif|png)$/) == null) {
+    	alert("Image URL is invalid");
+    }else{
+    	return url;
     }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
+    
 }
