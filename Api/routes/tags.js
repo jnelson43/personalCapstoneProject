@@ -24,19 +24,16 @@ router.get('/:id', async (req, res) => {
 
 //Submits a User
 router.post('/', async (req,res) => {
-	const rag = new Tag({
-		username: req.body.username,
-		password: req.body.password,
-		firstName: req.body.firstName,
-		lastName: req.body.lastName,
-		addedRestaurants: req.body.addedRestaurants,
-		dateCreated: req.body.dateCreated,
+	const tag = new Tag({
+		tagText: req.body.tagText,
+		userID: req.body.userID,
+		restaurantID: req.body.restaurantID
 	});
 	try {
 		const savedTag = await tag.save();
 		res.json(savedTag);
 	}catch{
-		res.json({message: err});
+		res.json({message: "ERROR"});
 	}
 
 });

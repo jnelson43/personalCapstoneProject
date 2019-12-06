@@ -109,6 +109,7 @@ header,footer {
 .tagContainer {
   display: flex;
   flex-flow: row wrap;
+  flex-basis: 100%;
 }
 .tag {
   display:flex;
@@ -163,4 +164,10 @@ header,footer {
   margin-bottom: 10px;
   flex-basis: 100%;
   
+}
+.labelTag {
+  margin-right: 5px;
+}
+.addTag {
+  margin-left: 5px;
 }

@@ -17,6 +17,15 @@ $(document).ready(function(){
 		}
 	});
 
+	$('.restaurantsDisplay').on('click','.addTag',function() {
+		var tag = isPresent($(this).prev().val(),"Tag Text");
+		var restaurantID = $(this).attr('id');
+		if(tag != "Error"){
+			addTag(tag,loggedUser,restaurantID);
+		}
+		
+	});
+
 	/*Populate restaurant field*/
 	populateRestaurantsHandler(loggedUser)
 
@@ -49,7 +58,6 @@ $(document).ready(function(){
 			restaurantAdd(name,description,imageURL,loggedUser);
 		}
 	});
-
 });
 
 /*DB Methods*/
@@ -101,7 +109,6 @@ function restaurantAdd(name,description,imageURL,username){
 	    'data': postData,
 	    'redirect': true,
 	    'success': function(data) {
-	    	alert('here');
 	    	window.location.href = 'index.html';
 	    },
 	    'error': function(data) {
@@ -110,7 +117,50 @@ function restaurantAdd(name,description,imageURL,username){
     });
 }
 
+function addTag(tag,loggedUserID,restaurantID){
+	var postData = JSON.stringify({'tagText': tag,'userID': loggedUserID,'restaurantID': restaurantID});
+    $.ajax({
+	    'url':'http://localhost:3000/tags',
+	    'method':'POST',
+	    'dataType': 'json',
+	    processData: false,
+	    'contentType': 'application/json',
+	    'data': postData,
+	    'redirect': true,
+	    'success': function(data) {
+	    	getTagsByRestaurantID(restaurantID);
+	    },
+	    'error': function(data) {
+	    	alert('There was a problem submitting your request');
+	    }
+    });
+}
+
 /*Handlers*/
+
+async function getTagsByRestaurantID(restaurantID){
+	let promise = new Promise((resolve, reject) => {
+		var url = 'http://localhost:3000/tags';
+		$.get(url, function (data) {
+	       
+	    }).done(function(data){
+	    	resolve(data);
+	    });
+	});
+	let tags = await promise;
+
+	populateTagsByRestaurantID(tags,restaurantID);
+}
+
+function populateTagsByRestaurantID(tags,restaurantID){
+	tags.forEach(tag => {
+		if(tag.restaurantID == restaurantID){
+			$('#container' + restaurantID + " .tagContainer").html("");
+			$('#container' + restaurantID + " .tagContainer").append('<div class="tag"><div class="tagText">' + tag.tagText + '</div><div class="tagExit">✖</div></div>');
+		}
+	});
+}
+
 async function handleLogin(username,password){
 	let promise = new Promise((resolve, reject) => {
 		var url = 'http://localhost:3000/users';
@@ -125,7 +175,7 @@ async function handleLogin(username,password){
 	if(passwordMatchesUsername(username,password,users) == true){
 		localStorage.setItem("username", username);
 		loggedUser = localStorage.getItem("username");
-		window.location.replace("index.html");
+		window.location.href = 'index.html';
 	}else{
 		alert("Username/Password combination not found");
 	}
@@ -146,21 +196,20 @@ async function populateRestaurantsHandler(username){
 }
 
 function populateRestaurants(username,restaurants){
-	restaurants.forEach(restaurant => {
+		restaurants.forEach(restaurant => {
     	$('.restaurantsDisplay').append(`
-    		<div class="restaurantContainer">
+    		<div class="restaurantContainer" id=container` + restaurant._id + `>
          		<div class="restaurantTitle">` + restaurant.name + `</div>
          		<img class="reataurantImage" src="` + restaurant.imageURL + `" alt="Restaurant Image">
       			<div class="restaurantDescription">` + restaurant.description + `</div>
-      			<div class="tags">
-         			<div class="tagContainer">
-   						'<div class="tag"><div class="tagText">Thai</div><div class="tagExit">✖</div></div>'
-        		 	</div>
-      			</div>
+      			<div class="tagContainer"></div>
+      			<label class='labelTag'>Add Tag</label><input type="text" name="tagInput" class="tagInput"><button class="addTag" id=` + restaurant._id + `>Add</button>
       		</div>
-      	`);   		
-    });
+      	`);   	
+      	getTagsByRestaurantID(restaurant._id);  	
+    })
 }
+
 async function isUniqueHandler(username){
 	let promise = new Promise((resolve, reject) => {
 		var url = 'http://localhost:3000/users';
@@ -192,6 +241,14 @@ function isUnique(username,users){
 	}else{
 		return true;
 	}
+}
+
+function getIDFromUsername(username,users){
+	users.forEach(user => {
+   		if(user.username == username){
+   			return user._id;
+   		}
+   	});
 }
 
 function passwordMatchesUsername(username,password,users){

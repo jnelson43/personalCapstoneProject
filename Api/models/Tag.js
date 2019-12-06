@@ -6,14 +6,10 @@ const TagSchema = mongoose.Schema({
 		require: true
 	},
 	userID: {
-		type: Number,
+		type: String,
 		require: true
 	},
-	tagID: {
-		type: Number,
-		require: true
-	},
-	restaurauntID: {
+	restaurantID: {
 		type: String,
 		require: true
 	}
