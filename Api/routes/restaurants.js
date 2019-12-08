@@ -40,7 +40,7 @@ router.post('/', async (req,res) => {
 });
 
 //Delete Restauruant
-router.delete('/:id', async (req,res) => {
+router.delete('/:_id', async (req,res) => {
 	try{
 		const removedRestaurant = await Restaurant.remove({_id: req.params._id});
 		res.json(removedRestaurant);

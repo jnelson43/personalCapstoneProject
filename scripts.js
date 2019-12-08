@@ -1,6 +1,9 @@
 $(document).ready(function(){
 	/*Check if logged in and set login button to appropriate text and action*/
 	var loggedUser = localStorage.getItem("username");
+	localStorage.setItem("selectedTags",'null');
+	var selectedTags = localStorage.getItem("selectedTags");
+
 	if(loggedUser != 'null'){
 		$('.login').html("Logout");
 		$('.login').attr("href","index.html");
@@ -20,17 +23,81 @@ $(document).ready(function(){
 	$('.restaurantsDisplay').on('click','.addTag',function() {
 		var tag = isPresent($(this).prev().val(),"Tag Text");
 		var restaurantID = $(this).attr('id');
+		var username = $(this).prev().attr('id');
 		if(tag != "Error"){
-			addTag(tag,loggedUser,restaurantID);
+			addTag(tag,loggedUser,restaurantID,selectedTags,username);
 		}
 		
 	});
 
+	$('.restaurantsDisplay').on('click','.tagDelete',function() {
+		var tag = $(this).parent().attr('id');
+		deleteTag(tag);
+	});
+
+	$('.restaurantsDisplay').on('click','.removeRestaurant',function() {
+		var restaurantID = $(this).parent().attr('id');
+		restaurantID = restaurantID.replace('container','');
+		if($('#container'+restaurantID).find('.tagContainer').html() != ''){
+			alert('Please remove all tags for this restaurant first');
+		}else{
+			deleteRestaurant(restaurantID);
+		}
+		
+	});
+
+	$('.tagContainerSidebar').on('click','.tagText',function() {
+		var tag = $(this).html();
+		if(selectedTags != 'null'){
+			if(selectedTags.includes(tag) == false){
+				localStorage.setItem("selectedTags",selectedTags + "," + tag);
+				selectedTags = localStorage.getItem("selectedTags");
+				$(this).parent().html('<div class="tagText">' + tag + '</div><div class="tagExit">✖</div>');
+				$('.restaurantsDisplay').html("");
+				populateRestaurantsHandler(loggedUser,selectedTags);
+			}
+		}else{
+			localStorage.setItem("selectedTags",tag);
+			selectedTags = localStorage.getItem("selectedTags");
+			$(this).parent().html('<div class="tagText">' + tag + '</div><div class="tagExit">✖</div>');
+			$('.restaurantsDisplay').html("");
+			populateRestaurantsHandler(loggedUser,selectedTags);
+		}
+	});
+
+	$('.tagContainerSidebar').on('click','.tagExit',function() {
+		var selectedTagsOld = localStorage.getItem("selectedTags");
+		if(selectedTagsOld[0] == ','){
+			selectedTagsOld = selectedTagsOld.substring(1);
+		}
+		var lastTagRemoved = false;
+		if(selectedTagsOld.includes(',') != true){
+			lastTagRemoved = true;
+			
+		}
+
+		var tagComma = ',' + $(this).prev().html();
+		var tag = $(this).prev().html();
+		if(selectedTagsOld.includes(tagComma)){
+			localStorage.setItem('selectedTags',selectedTagsOld.replace(tagComma,''));
+		}else{
+			localStorage.setItem('selectedTags',selectedTagsOld.replace(tag,''));
+		}
+		$(this).parent().html('<div class="tagText">' + tag + '</div>')
+
+		if(lastTagRemoved == true){
+			localStorage.setItem("selectedTags",'null');
+		}
+		selectedTags = localStorage.getItem("selectedTags");
+		$('.restaurantsDisplay').html("");
+		populateRestaurantsHandler(loggedUser,selectedTags);
+	});
+
 	/*Populate restaurant field*/
-	populateRestaurantsHandler(loggedUser)
+	populateRestaurantsHandler(loggedUser,selectedTags);
 
 	/*Fill tag container with all tags*/
-	$('.tagContainer').append('<div class="tag"><div class="tagText">Mexican</div><div class="tagExit">✖</div></div>');
+	populateTagSidebarHandler(loggedUser);
 
 	$('.registrationSubmit').click(function() {
 		var username = isPresent($('#registrationUsername').val(),"Username");
@@ -98,8 +165,30 @@ function addPerson(username,password,firstName,lastName){
     });
 }
 
+function deleteTag(tag){
+    $.ajax({
+	    'url':'http://localhost:3000/tags/' + tag,
+	    'method':'delete',
+	    processData: false,
+	    'success': function(data) {
+	    	window.location.href = 'index.html';
+     	}
+    });
+}
+
+function deleteRestaurant(restaurantID){
+	$.ajax({
+	    'url':'http://localhost:3000/restaurants/' + restaurantID,
+	    'method':'delete',
+	    processData: false,
+	    'success': function(data) {
+	    	window.location.href = 'index.html';
+     	}
+    });
+}
+
 function restaurantAdd(name,description,imageURL,username){
-	var postData = JSON.stringify({'name': name,'description': description,'imageURL': imageURL, 'userName': username});
+	var postData = JSON.stringify({'name': name,'description': description,'imageURL': imageURL, 'username': username});
     $.ajax({
 	    'url':'http://localhost:3000/restaurants',
 	    'method':'POST',
@@ -117,7 +206,7 @@ function restaurantAdd(name,description,imageURL,username){
     });
 }
 
-function addTag(tag,loggedUserID,restaurantID){
+function addTag(tag,loggedUserID,restaurantID,selectedTags,restaurantAddedBy){
 	var postData = JSON.stringify({'tagText': tag,'userID': loggedUserID,'restaurantID': restaurantID});
     $.ajax({
 	    'url':'http://localhost:3000/tags',
@@ -128,7 +217,8 @@ function addTag(tag,loggedUserID,restaurantID){
 	    'data': postData,
 	    'redirect': true,
 	    'success': function(data) {
-	    	getTagsByRestaurantID(restaurantID);
+	    	getTagsByRestaurantID(restaurantID,selectedTags,loggedUserID,restaurantAddedBy);
+	    	populateTagSidebarHandler(loggedUserID)
 	    },
 	    'error': function(data) {
 	    	alert('There was a problem submitting your request');
@@ -137,8 +227,7 @@ function addTag(tag,loggedUserID,restaurantID){
 }
 
 /*Handlers*/
-
-async function getTagsByRestaurantID(restaurantID){
+async function populateTagSidebarHandler(loggedUser){
 	let promise = new Promise((resolve, reject) => {
 		var url = 'http://localhost:3000/tags';
 		$.get(url, function (data) {
@@ -149,16 +238,52 @@ async function getTagsByRestaurantID(restaurantID){
 	});
 	let tags = await promise;
 
-	populateTagsByRestaurantID(tags,restaurantID);
+	populateTagSidebar(loggedUser,tags);
 }
 
-function populateTagsByRestaurantID(tags,restaurantID){
+function populateTagSidebar(loggedUser,tags){
+	var uniqueTags = [];
+	$('.tagContainerSidebar').html("");
 	tags.forEach(tag => {
-		if(tag.restaurantID == restaurantID){
-			$('#container' + restaurantID + " .tagContainer").html("");
-			$('#container' + restaurantID + " .tagContainer").append('<div class="tag"><div class="tagText">' + tag.tagText + '</div><div class="tagExit">✖</div></div>');
+		if(uniqueTags.includes(tag.tagText) == false){
+			$('.tagContainerSidebar').append('<div class="tag"><div class="tagText">'+ tag.tagText + '</div></div>');
+			uniqueTags.push(tag.tagText);
 		}
 	});
+}
+
+async function getTagsByRestaurantID(restaurantID,selectedTags,username,restaurantAddedBy){
+	let promise = new Promise((resolve, reject) => {
+		var url = 'http://localhost:3000/tags';
+		$.get(url, function (data) {
+	       
+	    }).done(function(data){
+	    	resolve(data);
+	    });
+	});
+	let tags = await promise;
+
+	populateTagsByRestaurantID(tags,restaurantID,selectedTags,username,restaurantAddedBy);
+}
+
+function populateTagsByRestaurantID(tags,restaurantID,selectedTags,username,restaurantAddedBy){
+	var selectedTagFound = false;
+	$('#container' + restaurantID + " .tagContainer").html("");
+	tags.forEach(tag => {
+		if(tag.restaurantID == restaurantID){
+			if(selectedTags.includes(tag.tagText)){
+				selectedTagFound = true;
+			}
+			if(username == tag.userID || username == restaurantAddedBy){
+				$('#container' + restaurantID + " .tagContainer").append('<div class="tag" id=' + tag._id + '><div class="tagText">' + tag.tagText + '</div><div class="tagDelete">✖</div></div>');
+			}else{
+				$('#container' + restaurantID + " .tagContainer").append('<div class="tag" id=' + tag._id + '><div class="tagText">' + tag.tagText + '</div></div>');
+			}
+		}
+	});
+	if(selectedTagFound == false && selectedTags != 'null'){
+			$('#container' + restaurantID).hide();
+	}
 }
 
 async function handleLogin(username,password){
@@ -181,7 +306,7 @@ async function handleLogin(username,password){
 	}
 }
 
-async function populateRestaurantsHandler(username){
+async function populateRestaurantsHandler(username,selectedTags){
 	let promise = new Promise((resolve, reject) => {
 		var url = 'http://localhost:3000/restaurants';
 		$.get(url, function (data) {
@@ -192,10 +317,10 @@ async function populateRestaurantsHandler(username){
 	});
 	let restaurants = await promise;
 
-	populateRestaurants(username,restaurants);
+	populateRestaurants(username,restaurants,selectedTags);
 }
 
-function populateRestaurants(username,restaurants){
+function populateRestaurants(username,restaurants,selectedTags){
 		restaurants.forEach(restaurant => {
     	$('.restaurantsDisplay').append(`
     		<div class="restaurantContainer" id=container` + restaurant._id + `>
@@ -203,10 +328,14 @@ function populateRestaurants(username,restaurants){
          		<img class="reataurantImage" src="` + restaurant.imageURL + `" alt="Restaurant Image">
       			<div class="restaurantDescription">` + restaurant.description + `</div>
       			<div class="tagContainer"></div>
-      			<label class='labelTag'>Add Tag</label><input type="text" name="tagInput" class="tagInput"><button class="addTag" id=` + restaurant._id + `>Add</button>
+      			<label class='labelTag'>Add Tag</label><input type="text" name="tagInput" class="tagInput" id=`+restaurant.username+`><button class="addTag" id=` + restaurant._id + `>Add</button>
       		</div>
-      	`);   	
-      	getTagsByRestaurantID(restaurant._id);  	
+      	`);
+      	if(restaurant.username == username){
+      		$('#container' + restaurant._id).append('<div class="removeRestaurant">Remove Restaurant</div>');
+      	}   
+
+      	getTagsByRestaurantID(restaurant._id,selectedTags,username,restaurant.username);  	
     })
 }
 
@@ -228,6 +357,7 @@ async function isUniqueHandler(username){
 		return "Error";
 	}
 }
+
 /*Validation*/
 function isUnique(username,users){
 	var usernameExists = false;

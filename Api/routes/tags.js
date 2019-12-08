@@ -39,12 +39,12 @@ router.post('/', async (req,res) => {
 });
 
 //Delete User
-router.delete('/:id', async (req,res) => {
+router.delete('/:_id', async (req,res) => {
 	try{
-		const removedTag = await User.remove({_id: req.params._id});
+		const removedTag = await Tag.remove({_id: req.params._id});
 		res.json(removedTag);
 	}catch{
-		res.json({message: err});
+		res.json({message: "ERROR"});
 	}
 });
 

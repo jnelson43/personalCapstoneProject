@@ -106,7 +106,7 @@ header,footer {
   margin-bottom: 10px;
 }
 /*Tags Sidebar*/
-.tagContainer {
+.tagContainer,.tagContainerSidebar {
   display: flex;
   flex-flow: row wrap;
   flex-basis: 100%;
@@ -121,7 +121,7 @@ header,footer {
   margin: 7px;
   cursor: pointer;
 }
-.tagExit {
+.tagExit,.tagDelete {
   font-family: 'Montserrat', sans-serif;
 
   font-size: 12px;
@@ -130,7 +130,7 @@ header,footer {
   text-decoration: none;
 }
 
-.tagExit:hover {
+.tagExit:hover,.tagDelete:hover {
   font-size: 14px;
   font-weight:bold;
 }
@@ -158,7 +158,11 @@ header,footer {
   flex-basis: 10%;
   
 }
-
+.removeRestaurant {
+  flex-basis: 100%;
+  font-size: 12px;
+  cursor: pointer;
+}
 .restaurantDescription {
   margin-top: 10px;
   margin-bottom: 10px;
